@@ -199,7 +199,7 @@ def _resource_description(widget: RevitWidget) -> str:
 
 
 # Get Revit server URL from environment or use default
-REVIT_SERVER_URL = os.getenv("REVIT_SERVER_URL", "http://172.17.0.1:48884")
+REVIT_SERVER_URL = os.getenv("REVIT_SERVER_URL", "http://127.0.0.1:48884")
 USE_MOCK = os.getenv("USE_MOCK", "false").lower() == "true"
 
 def get_revit_response(operation: str, data: Dict[str, Any]) -> Dict[str, Any]:

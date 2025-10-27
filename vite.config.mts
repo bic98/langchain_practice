@@ -20,6 +20,48 @@ const toServerRoot = (abs: string) => {
   return "./" + rel;
 };
 
+function generateHtmlForBuild(): Plugin {
+  return {
+    name: "generate-html-for-build",
+    apply: "build",
+    generateBundle(_, bundle) {
+      const entries = Object.keys(bundle).filter(
+        (name) => bundle[name].type === "chunk" && bundle[name].isEntry
+      );
+
+      for (const entryFile of entries) {
+        const chunk = bundle[entryFile];
+        if (chunk.type !== "chunk") continue;
+
+        const name = chunk.name;
+        const jsFile = entryFile;
+        const cssFile = Object.keys(bundle).find(
+          (f) => f.endsWith(".css") && f.includes(name)
+        );
+
+        const html = `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>${name}</title>
+  ${cssFile ? `<link rel="stylesheet" href="${cssFile}">` : ""}
+  <script type="module" src="${jsFile}"></script>
+</head>
+<body>
+  <div id="${name}-root"></div>
+</body>
+</html>`;
+
+        this.emitFile({
+          type: "asset",
+          fileName: `${name}.html`,
+          source: html,
+        });
+      }
+    },
+  };
+}
+
 function multiEntryDevEndpoints(options: {
   entries: Record<string, string>;
   globalCss?: string[];
@@ -197,6 +239,7 @@ export default defineConfig(({}) => ({
     tailwindcss(),
     react(),
     multiEntryDevEndpoints({ entries: inputs }),
+    generateHtmlForBuild(),
   ],
   cacheDir: "node_modules/.vite-react",
   server: {
